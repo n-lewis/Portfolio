@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, flash, redirect
 from flask_mail import Mail, Message
+from dotenv import load_dotenv
 import os
+load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.urandom(12)
 
@@ -19,10 +21,12 @@ mail = Mail(app)
 
 def send(data):
     msg = Message(subject=data['subject'],
-                  sender=app.config.get(""),
-                  recipients=[""],
-                  body=data['email'] + data['body'])
+                  sender=app.config.get("MAIL_USERNAME"),
+                  recipients=[os.environ['EMAIL_RECIPIENT']],
+                  #   body=str(data['email']) + str(data['message']))
+                  body=f"Email: {data['email']} Body: {data['message']}")
     mail.send(msg)
+    print('Message Sent')
 
 
 @app.route('/')
@@ -42,6 +46,7 @@ def submint_form():
         print(data)
         if data['email'] and data['subject'] and data['message']:
             flash('Form submitted! I will get back to you as soon as I can.')
+            send(data)
             return redirect('index.html')
         else:
             flash('Invalid submission')
